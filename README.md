@@ -13,6 +13,7 @@ A Vagrant based virtual environment for the SimpleBlog demo application (Alten I
 - Now wait for the process to complete
 
 ## Open the Virtual machine (debian 8)
+- The default username and password is vagrant 
 - Firefox should be installed, navigate to http://localhost:8088/blog/index.xhtml and see the blog.
 - use admin/admin to login to the blog
 
