@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -e
 export HOME=/home/vagrant
+export IDEA_IC_VERSION=idea-IC-171.4694.70
+export SET_VAGRANT_AS_OWNER="sudo chown -R vagrant:vagrant /home/vagrant"
+export FLYWAY_VERSION=4.2.0
 
-echo provisioning...
+echo  provisioning the Virtual machine
 
 echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/webupd8team-java.list
 echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | sudo tee -a /etc/apt/sources.list.d/webupd8team-java.list
@@ -25,28 +28,31 @@ sudo apt-get install -y --force-yes mysql-server
 sudo dpkg --configure -a
 
 if [[ ! -d ./SimpleBlog ]]; then
+    echo  SimpleBlog directory does not exist create it.
     git clone https://github.com/endegraaf/SimpleBlog.git
 else
     cd SimpleBlog
     git pull
-    cd ..
+    cd $HOME
 fi
 
-sudo chown -R vagrant:vagrant /home/vagrant
+$SET_VAGRANT_AS_OWNER
 
 # Flyway
-echo Install Flyway database migration
-cd /home/vagrant/
+echo  Install Flyway version $FLYWAY_VERSION database migration
+cd $HOME
 if [[ ! -d ./Flyway ]]; then
     mkdir Flyway && cd Flyway
-    wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/4.2.0/flyway-commandline-4.2.0-linux-x64.tar.gz
+    wget -q https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz
     tar xzf flyway-commandline-4.2.0-linux-x64.tar.gz
 fi
-export PATH=$PATH:$HOME/Flyway/flyway-4.2.0
+export PATH=$PATH:$HOME/Flyway/flyway-$FLYWAY_VERSION
 
 # spring-security-facelets-taglib mirror
 cd $HOME
-git clone https://github.com/domdorn/spring-security-facelets-taglib.git
+if [[ ! -d ./spring-security-facelets-taglib ]]; then
+    git clone https://github.com/domdorn/spring-security-facelets-taglib.git
+fi
 cd spring-security-facelets-taglib
 mvn clean install -DskipTests #skip tests because of the embedded selenium one.
 
@@ -59,7 +65,7 @@ fi
 cd SimpleBlog
 git pull
 
-cd $HOME && sudo chown -R vagrant:vagrant $HOME
+cd $HOME && $SET_VAGRANT_AS_OWNER
 
 
 # Mysql Local database
@@ -69,44 +75,60 @@ mysql --user=root --password=vagrant --execute="GRANT USAGE ON *.* TO 'bloguser'
 mysql --user=root --password=vagrant --execute="CREATE USER 'bloguser'@'localhost' IDENTIFIED BY 'blogpassword';"
 mysql --user=root --password=vagrant --execute="GRANT ALL PRIVILEGES ON blog.* TO 'bloguser'@'localhost' WITH GRANT OPTION;"
 
-cd $HOME/SimpleBlog
-
+cd $HOME && cd SimpleBlog
 
 flyway  -baselineOnMigrate=true -url=jdbc:mysql://localhost/ -schemas=blog -user=bloguser -password=blogpassword -locations=filesystem:src/main/resources/db/migration/ migrate
 
+
+# Ide
+cd ~/Downloads/ 
+if [[ ! -d ./$IDEA_IC_VERSION ]]; then
+    wget -q https://download.jetbrains.com/idea/ideaIC-2017.1.5-no-jdk.tar.gz
+    tar xzf ideaIC-2017.1.5-no-jdk.tar.gz
+    #ln -s /home/vagrant/Downloads/$IDEA_IC_VERSION/bin/idea.sh ~/Desktop/idea.sh
+    echo -e "[Desktop Entry]\n" \
+    "Name=Idea\n" \
+    "GenericName=IntelliJ Idea\n" \
+    "Comment=Edit text files\n" \
+    "Exec=/home/vagrant/Downloads/$IDEA_IC_VERSION/bin/idea.sh %F\n" \
+    "Terminal=false\n" \
+    "Type=Application\n" \
+    "Icon=/home/vagrant/Downloads/$IDEA_IC_VERSION/bin/idea.png\n" \
+    "Categories=Programming;IDE;\n" \
+    "StartupNotify=true" > ~/Desktop/Idea.desktop
+fi
+
+cd $HOME && $SET_VAGRANT_AS_OWNER
+
+# Start app
+echo  Start the SimpleBlog application
+
+cd $HOME && cd SimpleBlog
 mvn clean install
-mvn tomcat7:run-war
+#nohup mvn tomcat7:run-war &
+
+echo -e "#!/bin/sh\n" \
+"cd /home/vagrant/SimpleBlog\n" \
+"mvn tomcat7:run-war" > ~/Start-SimpleBlog.sh
+
+chmod +x ~/Start-SimpleBlog.sh
 
 
+echo -e "[Desktop Entry]\n" \
+    "Name=Run SimpleBlog\n" \
+    "GenericName=SimpleBlog\n" \
+    "Exec=/home/vagrant/Start-SimpleBlog.sh %F\n" \
+    "Terminal=true\n" \
+    "Type=Application\n" \
+    "Icon=" \
+    "Categories=" \
+    "StartupNotify=false" > ~/Desktop/Start-SimpleBlog.desktop
+
+chmod +x ~/Desktop/Start-SimpleBlog.desktop
+
+cp -r /root/.m2 /home/vagrant
+
+chown -R vagrant:vagrant /home/vagrant
 
 
-
-
-
-## Gecko driver
-#cd /home/vagrant
-#if [[ -d ./gecko ]]; then
-#   echo Gecko directory already exists
-#else    
-#    if [[ ! -d ./gecko ]]; then
-#        mkdir gecko
-#    fi
-#   cd gecko
-#   wget https://github.com/mozilla/geckodriver/releases/download/v0.16.1/geckodriver-v0.16.1-linux64.tar.gz
-#    tar xvzf geckodriver-v0.16.1-linux64.tar.gz
-#    sudo cp geckodriver /usr/local/bin
-#fi
-#
-##Chromedriver
-#cd /home/vagrant
-#
-#if [[ ./chromedriver ]]; then
-#   echo Chromedriver directory already exists
-#else    
-#    mkdir chromedriver
-#    cd chromedriver
-#    wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
-#    unzip chromedriver_linux64.zip
-#    sudo cp chromedriver /usr/local/bin
-#fi
 

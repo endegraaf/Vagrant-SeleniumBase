@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
   end
 
-  config.vm.synced_folder "./sync", "/home/vagrant/sync-with-host-folder"
+  #config.vm.synced_folder "./sync", "/home/vagrant/sync-with-host-folder"
 
   #config.vm.network "private_network", type: "dhcp"
   #config.vm.provision "file", source: "./bashrc", destination: "/tmp/bashrc"
