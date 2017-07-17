@@ -88,7 +88,7 @@ if [[ ! -d ./$IDEA_IC_VERSION ]]; then
     #ln -s /home/vagrant/Downloads/$IDEA_IC_VERSION/bin/idea.sh ~/Desktop/idea.sh
     echo -e "[Desktop Entry]\n" \
     "Name=Idea\n" \
-    "GenericName=IntelliJ Idea\n" \
+    "GenericName=IntelliJ Idea\n" \vb.gui = true
     "Comment=Edit text files\n" \
     "Exec=/home/vagrant/Downloads/$IDEA_IC_VERSION/bin/idea.sh %F\n" \
     "Terminal=false\n" \
@@ -100,12 +100,8 @@ fi
 
 cd $HOME && $SET_VAGRANT_AS_OWNER
 
-# Start app
-echo  Start the SimpleBlog application
-
 cd $HOME && cd SimpleBlog
 mvn clean install
-#nohup mvn tomcat7:run-war &
 
 echo -e "#!/bin/sh\n" \
 "cd /home/vagrant/SimpleBlog\n" \
