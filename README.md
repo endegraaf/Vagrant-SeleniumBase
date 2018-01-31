@@ -1,5 +1,9 @@
 # Vagrant-SimpleBlog
-A Vagrant based virtual environment for the SimpleBlog demo application (Alten IT - Core team Agile).
+A Vagrant based virtual environment for an internal training CI/CD/DevOps and Test automation tooling. 
+The purpose of this demo image is: 
+- Give a brief introduction on Linux
+- Hands-on using Jenkins (pre-installed)
+- Hands-on SeleniumBase (pre-installed)
 
 # Instructions for getting started with Vagrant
 ## Prerequisites
@@ -14,8 +18,11 @@ A Vagrant based virtual environment for the SimpleBlog demo application (Alten I
 
 ## Open the Virtual machine (debian 8)
 - The default username and password is vagrant 
-- Firefox should be installed, navigate to http://localhost:8088/blog/index.xhtml and see the blog.
-- use admin/admin to login to the blog
+- Jenkins is up and running to validate this use `ps -ef |grep jenkins` from the command line, to access the local Jenkins navigate to http://localhost:8088/ and see the blog.
+- Login using the credentials: `alten` and `welkom@alten` as username and password respectively.
+
+## Running the tests 
+- refer to the documentation of SeleniumBase on their Github website. https://github.com/seleniumbase/SeleniumBase 
 
 ## Support 
 - In case of any questions or concerns regarding this VM please contact eric.de.graaf@alten.nl
