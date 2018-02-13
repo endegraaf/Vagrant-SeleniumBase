@@ -1,4 +1,4 @@
-# Vagrant-SimpleBlog
+# Vagrant-SeleniumBase
 A Vagrant based virtual environment for an internal training CI/CD/DevOps and Test automation tooling. 
 The purpose of this demo image is: 
 - Give a brief introduction on Linux
